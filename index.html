@@ -187,6 +187,36 @@
     .doc-content table{border-collapse:collapse;width:100%;margin:.5em 0;overflow-x:auto;display:block;}
     .doc-content td,.doc-content th{border:1px solid var(--border);padding:6px 10px;min-width:60px;}
 
+    /* ── stamp ── */
+    .stamp-month-nav{display:flex;align-items:center;justify-content:space-between;width:100%;margin-bottom:14px;}
+    .stamp-month-label{font-size:18px;font-weight:bold;color:var(--title);}
+    .stamp-month-btn{background:none;border:none;font-size:24px;color:var(--p1);cursor:pointer;padding:4px 14px;-webkit-tap-highlight-color:transparent;}
+    .cal-wrap{width:100%;background:var(--card-bg);border-radius:16px;padding:12px;box-shadow:0 2px 12px rgba(0,0,0,.07);margin-bottom:20px;}
+    .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;}
+    .cal-hd{text-align:center;font-size:11px;font-weight:bold;color:var(--sub);padding:4px 0;}
+    .cal-hd.sun{color:#ef4444;} .cal-hd.sat{color:#3b82f6;}
+    .cal-cell{aspect-ratio:1;display:flex;align-items:center;justify-content:center;border-radius:8px;position:relative;flex-direction:column;}
+    .cal-today{border:2px solid var(--p1);}
+    .cal-future{opacity:.35;}
+    .cal-day{font-size:13px;font-weight:bold;color:var(--title);}
+    .cal-day.sun{color:#ef4444;} .cal-day.sat{color:#3b82f6;}
+    .cal-day.dim{color:var(--sub);font-weight:normal;}
+    .stamp-img{width:82%;height:82%;object-fit:contain;}
+    .cal-day-small{position:absolute;bottom:1px;right:3px;font-size:8px;color:var(--sub);line-height:1;}
+    .stamp-press-btn{width:100%;padding:18px;background:linear-gradient(135deg,var(--p1),var(--p2));color:white;border:none;border-radius:16px;font-size:17px;font-weight:bold;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:transform .15s,opacity .15s;}
+    .stamp-press-btn:active{transform:scale(.97);}
+    .stamp-sel-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:4px;}
+    .stamp-sel-btn{aspect-ratio:1;border-radius:16px;border:3px solid var(--border);background:var(--bg);cursor:pointer;display:flex;align-items:center;justify-content:center;padding:10px;-webkit-tap-highlight-color:transparent;transition:border-color .15s,transform .15s;}
+    .stamp-sel-btn:active{transform:scale(.93);}
+    .stamp-sel-btn img{width:100%;height:100%;object-fit:contain;}
+    .stamp-sel-btn .stamp-emoji{font-size:40px;}
+    .stamp-home-card{width:100%;padding:14px 18px;background:var(--card-bg);border-radius:14px;border-left:4px solid var(--s1);display:flex;align-items:center;gap:12px;cursor:pointer;box-shadow:0 2px 10px rgba(0,0,0,.06);margin-bottom:16px;-webkit-tap-highlight-color:transparent;transition:opacity .15s;}
+    .stamp-home-card:active{opacity:.7;}
+    .stamp-home-icon{font-size:28px;}
+    .stamp-home-info{flex:1;}
+    .stamp-home-title{font-size:15px;font-weight:bold;color:var(--title);}
+    .stamp-home-sub{font-size:12px;color:var(--sub);margin-top:2px;}
+
     /* ── global back ── */
     .g-back{position:fixed;bottom:24px;left:20px;width:46px;height:46px;border-radius:50%;border:none;background:var(--card-bg);color:var(--title);font-size:20px;cursor:pointer;box-shadow:0 2px 12px rgba(0,0,0,.15);z-index:100;display:none;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent;transition:opacity .15s;}
     .g-back:active{opacity:.6;}
@@ -265,6 +295,14 @@
   <div class="app-logo">test app</div>
   <p class="app-sub">単語帳・資料を管理しよう</p>
   <div id="user-area" style="width:100%"></div>
+  <div class="stamp-home-card" onclick="goStamp()">
+    <div class="stamp-home-icon">📅</div>
+    <div class="stamp-home-info">
+      <div class="stamp-home-title">スタンプ帳</div>
+      <div class="stamp-home-sub" id="stamp-home-sub">読み込み中...</div>
+    </div>
+    <div style="font-size:20px;color:var(--sub)">›</div>
+  </div>
   <div class="home-tabs">
     <button class="home-tab active" id="htab-flashcard" onclick="setHomeTab('flashcard')">単語帳</button>
     <button class="home-tab" id="htab-document" onclick="setHomeTab('document')">資料</button>
@@ -348,7 +386,24 @@
   </div>
 </div>
 
-<!-- ⑥ Doc Add -->
+<!-- ⑥ Stamp -->
+<div id="stamp-screen" class="screen">
+  <div class="s-header">
+    <button class="back-btn" onclick="goHome()">←</button>
+    <span class="s-title">スタンプ帳</span>
+  </div>
+  <div class="stamp-month-nav">
+    <button class="stamp-month-btn" onclick="prevMonth()">＜</button>
+    <span class="stamp-month-label" id="stamp-month-label"></span>
+    <button class="stamp-month-btn" onclick="nextMonth()">＞</button>
+  </div>
+  <div class="cal-wrap">
+    <div class="cal-grid" id="stamp-cal"></div>
+  </div>
+  <button class="stamp-press-btn" id="stamp-press-btn" onclick="pressStamp()">今日のスタンプを押す！</button>
+</div>
+
+<!-- ⑦ Doc Add -->
 <div id="doc-add-screen" class="screen">
   <div class="s-header">
     <button class="back-btn" onclick="goHome()">←</button>
@@ -401,6 +456,14 @@
   <span class="sel-sheet-label">隠す</span>
   <button class="sel-sheet-color" style="background:#c9171e" onclick="applyRedSheet('#c9171e')"></button>
   <button class="sel-sheet-color" style="background:#66cc00" onclick="applyRedSheet('#66cc00')"></button>
+</div>
+
+<!-- Stamp select overlay + panel -->
+<div class="overlay" id="stamp-sel-ov" onclick="closeStampSheet()"></div>
+<div class="btm-panel" id="stamp-sel-panel">
+  <div class="panel-handle"></div>
+  <div class="panel-title">スタンプを選ぼう</div>
+  <div class="stamp-sel-grid" id="stamp-sel-grid"></div>
 </div>
 
 <!-- Global back button -->
@@ -627,6 +690,7 @@ function globalBack() {
     case 'doc-add-screen':    goHome(); break;
     case 'doc-detail-screen': goHome(); break;
     case 'doc-view-screen':   goDocDetail(currentDocId); break;
+    case 'stamp-screen':      goHome(); break;
   }
 }
 function goHome()    { renderHome(); showScreen('home-screen'); }
@@ -954,6 +1018,123 @@ function retryAll() {
   showScreen('study-screen'); renderCard();
 }
 
+/* ── Stamp ── */
+const STAMP_KEY = 'tc-stamps';
+let stampYear, stampMonth;
+
+// stamp image files: stamp1.png ~ stamp6.png (replace with your images)
+// emoji shown as fallback until images are uploaded
+const STAMP_LIST = [
+  { id:1, src:'stamp1.png', fb:'🐸' },
+  { id:2, src:'stamp2.png', fb:'🐱' },
+  { id:3, src:'stamp3.png', fb:'⛵' },
+  { id:4, src:'stamp4.png', fb:'🏰' },
+  { id:5, src:'stamp5.png', fb:'🐈‍⬛' },
+  { id:6, src:'stamp6.png', fb:'🐾' },
+  { id:7, src:'stamp7.png', fb:'👻' },
+  { id:8, src:'stamp8.png', fb:'🌸' },
+];
+
+function loadStamps() {
+  try {
+    const raw = JSON.parse(localStorage.getItem(STAMP_KEY) || '{}');
+    // migrate old Set format (array of strings → all stamp id 1)
+    if (Array.isArray(raw)) { const o={}; raw.forEach(d=>o[d]=1); return o; }
+    return raw;
+  } catch { return {}; }
+}
+function saveStamps(o) { localStorage.setItem(STAMP_KEY, JSON.stringify(o)); }
+function toDateStr(d) { return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; }
+
+function stampImgHtml(id, cls='stamp-img') {
+  const s = STAMP_LIST.find(s=>s.id===id) || STAMP_LIST[0];
+  return `<img src="${s.src}" class="${cls}" alt="${s.fb}" onerror="this.replaceWith(Object.assign(document.createElement('span'),{textContent:'${s.fb}',style:'font-size:1.6em'}))">`;
+}
+
+function goStamp() {
+  const now = new Date();
+  stampYear  = now.getFullYear();
+  stampMonth = now.getMonth();
+  renderStampCal();
+  showScreen('stamp-screen');
+}
+
+function prevMonth() { if (--stampMonth < 0) { stampMonth=11; stampYear--; } renderStampCal(); }
+function nextMonth() { if (++stampMonth > 11) { stampMonth=0;  stampYear++; } renderStampCal(); }
+
+function renderStampCal() {
+  document.getElementById('stamp-month-label').textContent = `${stampYear}年${stampMonth+1}月`;
+  const stamps   = loadStamps();
+  const today    = new Date();
+  const todayStr = toDateStr(today);
+  const firstDow = new Date(stampYear, stampMonth, 1).getDay();
+  const daysInM  = new Date(stampYear, stampMonth+1, 0).getDate();
+  const DAY_NAMES = ['日','月','火','水','木','金','土'];
+  const DOW_CLS   = ['sun','','','','','','sat'];
+
+  let html = DAY_NAMES.map((n,i) => `<div class="cal-hd ${DOW_CLS[i]}">${n}</div>`).join('');
+  for (let i = 0; i < firstDow; i++) html += '<div class="cal-cell"></div>';
+
+  for (let d = 1; d <= daysInM; d++) {
+    const dt  = new Date(stampYear, stampMonth, d);
+    const ds  = toDateStr(dt);
+    const dow = dt.getDay();
+    const isToday   = ds === todayStr;
+    const stampId   = stamps[ds];
+    const isFuture  = dt > today && ds !== todayStr;
+    const dowCls    = dow===0?'sun':dow===6?'sat':'';
+    html += `<div class="cal-cell ${isToday?'cal-today':''} ${isFuture?'cal-future':''}">
+      ${stampId
+        ? `${stampImgHtml(stampId)}<span class="cal-day-small">${d}</span>`
+        : `<span class="cal-day ${dowCls} ${isFuture?'dim':''}">${d}</span>`}
+    </div>`;
+  }
+  document.getElementById('stamp-cal').innerHTML = html;
+
+  const isThisMonth = stampYear === today.getFullYear() && stampMonth === today.getMonth();
+  const todayId     = stamps[todayStr];
+  const btn = document.getElementById('stamp-press-btn');
+  btn.style.display = isThisMonth ? 'block' : 'none';
+  btn.textContent   = todayId ? '今日のスタンプを変える' : '今日のスタンプを押す！';
+
+  updateStampHomeSub();
+}
+
+function pressStamp() { openStampSheet(); }
+
+function openStampSheet() {
+  document.getElementById('stamp-sel-grid').innerHTML = STAMP_LIST.map(s =>
+    `<button class="stamp-sel-btn" onclick="selectStamp(${s.id})">
+      ${stampImgHtml(s.id,'stamp-sel-img')}
+    </button>`
+  ).join('');
+  document.getElementById('stamp-sel-ov').classList.add('open');
+  document.getElementById('stamp-sel-panel').classList.add('open');
+}
+function closeStampSheet() {
+  document.getElementById('stamp-sel-ov').classList.remove('open');
+  document.getElementById('stamp-sel-panel').classList.remove('open');
+}
+function selectStamp(id) {
+  const stamps   = loadStamps();
+  const todayStr = toDateStr(new Date());
+  stamps[todayStr] = id;
+  saveStamps(stamps);
+  closeStampSheet();
+  renderStampCal();
+}
+
+function updateStampHomeSub() {
+  const el = document.getElementById('stamp-home-sub');
+  if (!el) return;
+  const stamps = loadStamps();
+  const now    = new Date();
+  const prefix = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+  const count  = Object.keys(stamps).filter(d=>d.startsWith(prefix)).length;
+  const todayDone = !!stamps[toDateStr(now)];
+  el.textContent = `今月 ${count}個${todayDone ? '　今日は押し済み✓' : '　今日はまだ'}`;
+}
+
 /* ── Doc Add ── */
 function goDocAdd() {
   pendingDocHtml = null;
@@ -1190,6 +1371,7 @@ if ('serviceWorker' in navigator) {
 /* ── Init ── */
 renderUserArea();
 renderHome();
+updateStampHomeSub();
 </script>
 </body>
 </html>
